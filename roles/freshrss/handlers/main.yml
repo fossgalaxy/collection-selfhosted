@@ -1,0 +1,9 @@
+---
+
+- name: Restart FreshRSS
+  become: true
+  ansible.builtin.service:
+    daemon_reload: true
+    name: "{{ freshrss_service }}"
+    state: restarted
+  failed_when: false

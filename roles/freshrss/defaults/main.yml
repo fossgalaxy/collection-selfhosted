@@ -1,0 +1,56 @@
+---
+
+freshrss_version: "1"
+freshrss_image: "docker.io/freshrss/freshrss:{{ freshrss_version }}"
+
+freshrss_domain: ""
+freshrss_url: "https://{{ freshrss_domain }}"
+
+freshrss_service: freshrss
+freshrss_volume_data: "{{ freshrss_service }}_data"
+freshrss_volume_extensions: "{{ freshrss_service }}_extensions"
+freshrss_quadlet_wanted_by: multi-user.target
+
+# podman secret names
+freshrss_secret_db_password: "{{ freshrss_service }}_db_pass"
+freshrss_secret_admin_password: "{{ freshrss_service }}_admin_pass"
+freshrss_secret_admin_api_password: "{{ freshrss_service }}_db_api_pass"
+freshrss_secret_oid_secret: "{{ freshrss_service }}_oid_secret"
+
+# UID and GID of container user
+freshrss_uid: 1000
+freshrss_gid: 1000
+
+# default account
+freshrss_admin_user: "admin"
+freshrss_admin_pass: ""
+freshrss_admin_api_pass: "{{ freshrss_admin_pass }}"
+
+# Database configuration
+freshrss_db: true
+freshrss_db_host: ""
+freshrss_db_name: "{{ freshrss_service }}"
+freshrss_db_owner: "{{ freshrss_service }}_admin"
+freshrss_db_user: "{{ freshrss_service }}_app"
+freshrss_db_pw: ""
+
+# OpenID
+freshrss_oid: true
+freshrss_oid_meta_url: ""
+freshrss_oid_client: "{{ freshrss_service }}"
+freshrss_oid_secret: ""
+freshrss_oid_headers: "X-Forwarded-Host X-Forwarded-Proto"
+
+# traefik labels
+freshrss_traefik: true
+freshrss_traefik_labels:
+  traefik.enable: "true"
+  "traefik.http.routers.{{ freshrss_service }}.rule": "Host(`{{ freshrss_domain }}`)"
+  "traefik.http.services.{{ freshrss_service }}.loadbalancer.server.port": "80"
+
+# Extra environment hook
+freshrss_extra_env: {}
+freshrss_extra_labels: {}
+freshrss_extra_volumes: []
+freshrss_extra_secrets: []
+freshrss_extra_quadlet_options: []

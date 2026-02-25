@@ -1,0 +1,19 @@
+---
+
+- name: Validate OIDC vars
+  ansible.builtin.assert:
+    that:
+      - freshrss_oid_meta_url is string and freshrss_oid_meta_url | length > 0
+      - freshrss_oid_client is string and freshrss_oid_client | length > 0
+      - freshrss_oid_secret is string and freshrss_oid_secret | length > 0
+    fail_msg: "OIDC enabled but required OIDC variables are missing/empty."
+  changed_when: false
+
+- name: Ensure secret for OpenID exists
+  become: true
+  no_log: true
+  containers.podman.podman_secret:
+    state: present
+    name: "{{ freshrss_secret_oid_secret }}"
+    data: "{{ freshrss_oid_secret }}"
+  notify: Restart FreshRSS

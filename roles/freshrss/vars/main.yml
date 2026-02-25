@@ -1,0 +1,54 @@
+freshrss_env: >-
+  {{
+    {
+      'PUID': freshrss_uid,
+      'PGID': freshrss_gid,
+      'BASE_URL': freshrss_url,
+      'SERVER_DNS': freshrss_domain,
+      'CRON_MIN': '13,43'
+    }
+    | combine((freshrss_db | bool) | ternary({
+        'DB_HOST': freshrss_db_host,
+        'DB_BASE': freshrss_db_name,
+        'DB_USER': freshrss_db_user,
+      }, {}))
+    | combine((freshrss_oid | bool) | ternary({
+        'OIDC_AUTH_ENABLED': 1,
+        'OIDC_CONFIGURATION_URL': freshrss_oid_meta_url,
+        'OIDC_CLIENT_ID': freshrss_oid_client,
+        'OIDC_X_FORWARDED_HEADERS': freshrss_oid_headers,
+      }, {}))
+  }}
+
+freshrss_secrets: >-
+  {{
+    ((freshrss_db | bool) | ternary(
+      [ freshrss_secret_db_password ~ ',type=env,target=DB_PASSWORD' ], []
+    ))
+    + [
+      freshrss_secret_admin_password ~ ',type=env,target=ADMIN_PASSWORD',
+      freshrss_secret_admin_api_password ~ ',type=env,target=ADMIN_API_PASSWORD'
+    ]
+    + ((freshrss_oid | bool) | ternary(
+      [ freshrss_secret_oid_secret ~ ',type=env,target=OIDC_CLIENT_SECRET' ], []
+    ))
+  }}
+
+freshrss_volumes: >-
+  {{
+    [
+      freshrss_volume_data ~ ':/var/www/FreshRSS/data:Z',
+      freshrss_volume_extensions ~ ':/var/www/FreshRSS/extensions:Z'
+    ]
+  }}
+
+freshrss_labels: >-
+  {{
+    (freshrss_traefik | bool)
+    | ternary(freshrss_traefik_labels, {})
+  }}
+  
+freshrss_quadlet_options:
+  - |
+    [Install]
+    WantedBy={{ freshrss_quadlet_wanted_by }}

@@ -1,0 +1,187 @@
+---
+argument_specs:
+  main:
+    short_description: Deploy FreshRSS using Podman quadlet
+    description:
+      - Deploys FreshRSS as a systemd-managed Podman quadlet container.
+      - Optionally configures PostgreSQL (via webpigeon.selfhosted.postgres_db) and OpenID Connect.
+    options:
+      # ---- Core ----
+      freshrss_version:
+        type: str
+        default: "1"
+        description: FreshRSS image tag/version.
+
+      freshrss_image:
+        type: str
+        default: "docker.io/freshrss/freshrss:{{ freshrss_version }}"
+        description: Container image reference.
+
+      freshrss_service:
+        type: str
+        default: "freshrss"
+        description:
+          - Podman container name and (by convention) the systemd unit name used by the handler.
+
+      freshrss_domain:
+        type: str
+        required: true
+        description: Public DNS name for FreshRSS (used for BASE_URL and routing).
+
+      freshrss_url:
+        type: str
+        default: "https://{{ freshrss_domain }}"
+        description: Public URL for FreshRSS.
+
+      # ---- Quadlet / systemd ----
+        freshrss_quadlet_wanted_by:
+          type: str
+          default: "multi-user.target"
+          description: systemd target to install/enable the quadlet unit under.
+
+      # ---- Volumes ----
+      freshrss_volume_data:
+        type: str
+        default: "{{ freshrss_service }}_data"
+        description: Name of the Podman volume for FreshRSS data.
+
+      freshrss_volume_extensions:
+        type: str
+        default: "{{ freshrss_service }}_extensions"
+        description: Name of the Podman volume for FreshRSS extensions.
+
+      # ---- UID/GID ----
+      freshrss_uid:
+        type: int
+        default: 1000
+        description: UID used inside the container.
+
+      freshrss_gid:
+        type: int
+        default: 1000
+        description: GID used inside the container.
+
+      # ---- Admin ----
+      freshrss_admin_user:
+        type: str
+        default: "admin"
+        description: Default admin username.
+
+      freshrss_admin_pass:
+        type: str
+        required: true
+        no_log: true
+        description: Default admin password.
+
+      freshrss_admin_api_pass:
+        type: str
+        default: "{{ freshrss_admin_pass }}"
+        no_log: true
+        description: Admin API password (defaults to admin password).
+
+      # ---- Secrets (names) ----
+      freshrss_secret_db_password:
+        type: str
+        default: "{{ freshrss_service }}_db_pass"
+        description: Podman secret name for the DB password.
+
+      freshrss_secret_admin_password:
+        type: str
+        default: "{{ freshrss_service }}_admin_pass"
+        description: Podman secret name for the admin password.
+
+      freshrss_secret_admin_api_password:
+        type: str
+        default: "{{ freshrss_service }}_db_api_pass"
+        description: Podman secret name for the admin API password.
+
+      freshrss_secret_oid_secret:
+        type: str
+        default: "{{ freshrss_service }}_oid_secret"
+        description: Podman secret name for the OIDC client secret.
+
+      # ---- Feature flags ----
+      freshrss_db:
+        type: bool
+        default: true
+        description: Enable PostgreSQL support.
+
+      freshrss_oid:
+        type: bool
+        default: true
+        description: Enable OpenID Connect support.
+
+      # ---- DB settings (required when freshrss_db=true) ----
+      freshrss_db_host:
+        type: str
+        description: PostgreSQL primary host (or VIP) used by the application and by the postgres_db role.
+
+      freshrss_db_name:
+        type: str
+        default: "{{ freshrss_service }}"
+        description: Database name.
+
+      freshrss_db_owner:
+        type: str
+        default: "{{ freshrss_service }}_admin"
+        description: Database owner role name.
+
+      freshrss_db_user:
+        type: str
+        default: "{{ freshrss_service }}_app"
+        description: Application login role name.
+
+      freshrss_db_pw:
+        type: str
+        no_log: true
+        description: Application database password.
+
+      # ---- OIDC settings (required when freshrss_oid=true) ----
+      freshrss_oid_meta_url:
+        type: str
+        description: OIDC discovery/metadata URL.
+
+      freshrss_oid_client:
+        type: str
+        default: "{{ freshrss_service }}"
+        description: OIDC client ID.
+
+      freshrss_oid_secret:
+        type: str
+        no_log: true
+        description: OIDC client secret.
+
+      freshrss_oid_headers:
+        type: str
+        default: "X-Forwarded-Host X-Forwarded-Proto"
+        description: Value for OIDC_X_FORWARDED_HEADERS.
+
+      # ---- Extension hooks ----
+      freshrss_extra_env:
+        type: dict
+        default: {}
+        description: Extra environment variables merged into the container environment.
+
+      freshrss_extra_labels:
+        type: dict
+        default: {}
+        description: Extra labels merged into the container labels.
+
+      freshrss_extra_volumes:
+        type: dict
+        default: {}
+        description: Extra volumes merged into the container volumes.
+
+      freshrss_extra_secrets:
+          type: dict
+          default: {}
+          description: Extra secrets merged into the container secrets.
+
+      freshrss_extra_quadlet_options:
+        type: dict
+        default: { }
+        description: Extra options merged into the container unit file.
+
+    required_if:
+      - [freshrss_db, true, [freshrss_db_host, freshrss_db_pw]]
+      - [freshrss_oid, true, [freshrss_oid_meta_url, freshrss_oid_secret]]

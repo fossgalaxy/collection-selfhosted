@@ -1,0 +1,37 @@
+---
+
+- name: Validate db vars
+  ansible.builtin.assert:
+    that:
+      - freshrss_db_host is string and freshrss_db_host | length > 0
+      - freshrss_db_name is string and freshrss_db_name | length > 0
+      - freshrss_db_owner is string and freshrss_db_owner | length > 0
+      - freshrss_db_user is string and freshrss_db_user | length > 0
+      - freshrss_db_pw is string and freshrss_db_pw | length > 0
+      - freshrss_secret_db_password is string and freshrss_secret_db_password | length > 0
+    fail_msg: "DB enabled but required DB variables are missing/empty."
+  changed_when: false
+
+- name: Ensure FreshRSS DB exists
+  no_log: true
+  ansible.builtin.include_role:
+    name: "fossgalaxy.infra.postgres_db"
+    tasks_from: ensure_db.yml
+  vars:
+    pg_host: "{{ freshrss_db_host }}"
+    pg_db: "{{ freshrss_db_name }}"
+    pg_owner: "{{ freshrss_db_owner }}"
+    pg_app_user: "{{ freshrss_db_user }}"
+    pg_app_password: "{{ freshrss_db_pw }}"
+    pg_app_inherits_owner: true
+  when: freshrss_db | bool
+
+- name: Ensure secret for database password exists
+  become: true
+  no_log: true
+  containers.podman.podman_secret:
+    state: present
+    name: "{{ freshrss_secret_db_password }}"
+    data: "{{ freshrss_db_pw }}"
+  notify:
+    - Restart FreshRSS

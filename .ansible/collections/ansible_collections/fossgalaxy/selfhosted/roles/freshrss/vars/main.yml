@@ -15,8 +15,8 @@ freshrss_env: >-
         'DB_USER': freshrss_db_user,
       }, {}))
     | combine((freshrss_oid | bool) | ternary({
-        'OIDC_ENABLED': 1,
-        'OIDC_PROVIDER_METADATA_URL': freshrss_oid_meta_url,
+        'OIDC_AUTH_ENABLED': 1,
+        'OIDC_CONFIGURATION_URL': freshrss_oid_meta_url,
         'OIDC_CLIENT_ID': freshrss_oid_client,
         'OIDC_X_FORWARDED_HEADERS': freshrss_oid_headers,
       }, {}))

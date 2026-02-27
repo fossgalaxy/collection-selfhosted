@@ -1,0 +1,34 @@
+{
+ "collection_info": {
+  "namespace": "fossgalaxy",
+  "name": "selfhosted",
+  "version": "0.1.0",
+  "authors": [
+   "Joseph Walton-Rivers <webpigeon@fossgalaxy.com>"
+  ],
+  "readme": "README.md",
+  "tags": [
+   "linux"
+  ],
+  "description": "Composable Ansible roles for running self-hosted services using Podman and systemd quadlets.",
+  "license": [
+   "GPL-3.0-or-later"
+  ],
+  "license_file": null,
+  "dependencies": {
+   "fossgalaxy.infra": "0.1.0"
+  },
+  "repository": "https://github.com/fossgalaxy/collection-selfhosted/",
+  "documentation": null,
+  "homepage": "https://www.fossgalaxy.com",
+  "issues": "https://github.com/fossgalaxy/collection-selfhosted/issues"
+ },
+ "file_manifest_file": {
+  "name": "FILES.json",
+  "ftype": "file",
+  "chksum_type": "sha256",
+  "chksum_sha256": "801550a25c63b248965131fa85c8f30b48b569653ffac01ce7a67fd872359ddf",
+  "format": 1
+ },
+ "format": 1
+}

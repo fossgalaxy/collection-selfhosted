@@ -1,0 +1,64 @@
+---
+
+- name: Ensure podman database is setup
+  ansible.builtin.include_tasks: "podman_postgres.yml"
+  when: freshrss_db | bool
+
+- name: Ensure data volume exists
+  become: true
+  containers.podman.podman_volume:
+    name: "{{ freshrss_volume_data }}"
+    state: quadlet
+  notify:
+    - Restart FreshRSS
+
+# - name: Ensure Traefik is setup
+#  ansible.builtin.include_role:
+#    name: webpigeon.selfhosted.traefik
+#  when: freshrss_traefik | bool
+
+- name: Ensure extensions volume exists
+  become: true
+  containers.podman.podman_volume:
+    name: "{{ freshrss_volume_extensions }}"
+    state: quadlet
+  notify:
+    - Restart FreshRSS
+
+- name: Ensure secret for admin password exists
+  become: true
+  no_log: true
+  containers.podman.podman_secret:
+    state: present
+    name: "{{ freshrss_secret_admin_password }}"
+    data: "{{ freshrss_admin_pass }}"
+  notify:
+    - Restart FreshRSS
+
+- name: Ensure secret for admin api password exists
+  become: true
+  no_log: true
+  containers.podman.podman_secret:
+    state: present
+    name: "{{ freshrss_secret_admin_api_password }}"
+    data: "{{ freshrss_admin_api_pass }}"
+  notify:
+    - Restart FreshRSS
+
+- name: Enable OIDC support
+  ansible.builtin.include_tasks: "podman_openid.yml"
+  when: freshrss_oid | bool
+
+- name: Ensure container exists
+  become: true
+  containers.podman.podman_container:
+    name: "{{ freshrss_service }}"
+    image: "{{ freshrss_image }}"
+    state: quadlet
+    env: "{{ freshrss_env | combine(freshrss_extra_env) }}"
+    secrets: "{{ freshrss_secrets + freshrss_extra_secrets }}"
+    volumes: "{{ freshrss_volumes + freshrss_extra_volumes }}"
+    label: "{{ freshrss_labels | combine(freshrss_extra_labels) }}"
+    quadlet_options: "{{ freshrss_quadlet_options + freshrss_extra_quadlet_options }}"
+  notify:
+    - Restart FreshRSS

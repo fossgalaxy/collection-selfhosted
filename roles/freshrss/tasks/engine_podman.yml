@@ -12,10 +12,10 @@
   notify:
     - Restart FreshRSS
 
-- name: Ensure Traefik is setup
-  ansible.builtin.include_role:
-    name: webpigeon.selfhosted.traefik
-  when: freshrss_traefik | bool
+# - name: Ensure Traefik is setup
+#  ansible.builtin.include_role:
+#    name: webpigeon.selfhosted.traefik
+#  when: freshrss_traefik | bool
 
 - name: Ensure extensions volume exists
   become: true

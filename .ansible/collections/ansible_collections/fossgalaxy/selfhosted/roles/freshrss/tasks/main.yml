@@ -1,0 +1,11 @@
+---
+
+- name: Validate container engine
+  ansible.builtin.assert:
+    that:
+      - freshrss_container_engine in ['podman']
+    fail_msg: "Unsupported container engine: {{ freshrss_container_engine }}"
+  changed_when: false
+
+- name: Include container engine tasks
+  ansible.builtin.include_tasks: "engine_{{ freshrss_container_engine }}.yml"

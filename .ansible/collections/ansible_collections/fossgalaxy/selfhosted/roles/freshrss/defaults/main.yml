@@ -44,27 +44,10 @@ freshrss_oid_headers: "X-Forwarded-Host X-Forwarded-Proto"
 
 # traefik labels
 freshrss_traefik: true
-freshrss_traefik_labels: >-
-  {{
-    (
-      {'traefik.enable': 'true'}
-    ) | combine(
-          (freshrss_traefik | default(true) | bool)
-          | ternary(
-              ([
-                {
-                  'key': 'traefik.http.routers.' ~ freshrss_service ~ '.rule',
-                  'value': 'Host(`' ~ freshrss_domain ~ '`)'
-                },
-                {
-                  'key': 'traefik.http.services.' ~ freshrss_service ~ '.loadbalancer.server.port',
-                  'value': '80'
-                }
-              ] | ansible.builtin.items2dict),
-              {}
-          )
-      )
-  }}
+freshrss_traefik_labels:
+  traefik.enable: "true"
+  "traefik.http.routers.{{ freshrss_service }}.rule": "Host(`{{ freshrss_domain }}`)"
+  "traefik.http.services.{{ freshrss_service }}.loadbalancer.server.port": "80"
 
 # Extra environment hook
 freshrss_extra_env: {}

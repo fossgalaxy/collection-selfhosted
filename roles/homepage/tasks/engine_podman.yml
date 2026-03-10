@@ -1,0 +1,41 @@
+---
+
+- name: Ensure data volume exists
+  become: true
+  ansible.builtin.file:
+    path: "{{ homepage_volume_dir }}"
+    state: directory
+    owner: "{{ homepage_uid }}"
+    group: "{{ homepage_gid }}"
+  notify:
+    - Restart Homepage
+
+- name: Ensure the settings files exist
+  become: true
+  ansible.builtin.template:
+    src: "{{ item.key }}.yaml.j2"
+    dest: "{{ item.value }}"
+    owner: "{{ homepage_uid }}"
+    group: "{{ homepage_gid }}"
+  loop: "{{ homepage_templates | dict2items }}"
+  vars:
+	settings: "{{ homepage_volume_dir }}/settings.yaml"
+	services: "{{ homepage_volume_dir }}/services.yaml"
+	bookmarks: "{{ homepage_volume_dir }}/bookmarks.yaml"
+	widgets: "{{ homepage_volume_dir }}/widgets.yaml"
+  notify:
+    - Restart Homepage
+
+- name: Ensure container exists
+  become: true
+  containers.podman.podman_container:
+    name: "{{ homepage_service }}"
+    image: "{{ homepage_image }}"
+    state: quadlet
+    env: "{{ homepage_env | combine(homepage_extra_env) }}"
+    secrets: "{{ homepage_secrets + homepage_extra_secrets }}"
+    volumes: "{{ homepage_volumes + homepage_extra_volumes }}"
+    label: "{{ homepage_labels | combine(homepage_extra_labels) }}"
+    quadlet_options: "{{ homepage_quadlet_options + homepage_extra_quadlet_options }}"
+  notify:
+    - Restart Homepage

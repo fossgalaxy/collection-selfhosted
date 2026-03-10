@@ -1,0 +1,13 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/bookmarks
+
+{% for category, bookmarks in homepage_bookmarks.items() %}
+  - {{ category }}
+    {% for bookmark, params in bookmarks.items() %}
+    - {{ bookmark }}
+      - {% for k, v in params.items() %}
+        {{ k }}: {{ v }}
+        {% endfor %}
+
+{% endfor %}

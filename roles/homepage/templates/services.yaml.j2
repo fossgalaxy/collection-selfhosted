@@ -1,0 +1,13 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/services/
+
+{% for category, services in homepage_services.items() %}
+  - {{ category }}
+    {% for service, params in services.items() %}
+    - {{ service }}
+      - {% for k, v in params.items() %}
+        {{ k }}: {{ v }}
+        {% endfor %}
+{% endfor %}
+

@@ -1,0 +1,81 @@
+---
+
+homepage_version: "latest"
+homepage_image: "ghcr.io/gethomepage/homepage:{{ homepage_version }}"
+
+homepage_domain: ""
+homepage_url: "https://{{ freshrss_domain }}"
+
+homepage_container_engine: podman
+homepage_service: homepage
+
+# volume binds
+homepage_volume_dir: "/srv/containers/{{ homepage_service }}"
+homepage_quadlet_wanted_by: multi-user.target
+
+# UID and GID of container user
+homepage_uid: 1000
+homepage_gid: 1000
+
+# traefik labels
+homepage_traefik: true
+homepage_traefik_labels: >-
+  {{
+    (
+      {'traefik.enable': 'true'}
+    ) | combine(
+          (freshrss_traefik | default(true) | bool)
+          | ternary(
+              ([
+                {
+                  'key': 'traefik.http.routers.' ~ homepage_service ~ '.rule',
+                  'value': 'Host(`' ~ homepage_domain ~ '`)'
+                },
+                {
+                  'key': 'traefik.http.services.' ~ homepage_service ~ '.loadbalancer.server.port',
+                  'value': '3000'
+                }
+              ] | ansible.builtin.items2dict),
+              {}
+          )
+      )
+  }}
+
+# homepage config
+homepage_search_provider: duckduckgo
+
+homepage_bookmarks:
+    - Developer:
+      - Github:
+          - abbr: GH
+            href: https://github.com
+    - Social:
+      - Reddit:
+        - icon: reddit.png
+          href: https://reddit.com/
+          description: The front page of the internet
+    - Entertainment:
+      - YouTube:
+        - abbr: YT
+          href: https://youtube.com
+
+homepage_services:
+  - My First Group:
+      - My First Service:
+          href: http://localhost/
+          description: Homepage is awesome
+  - My Second Group:
+    - My Second Service:
+        href: http://localhost/
+        description: Homepage is the best
+  - My Third Group:
+      - My Third Service:
+          href: http://localhost
+          description: Homepage is 😎
+
+# Extra environment hook
+homepage_extra_env: {}
+homepage_extra_labels: {}
+homepage_extra_volumes: []
+homepage_extra_secrets: []
+homepage_extra_quadlet_options: []

@@ -1,0 +1,9 @@
+---
+
+- name: Restart Homepage
+  become: true
+  ansible.builtin.service:
+    daemon_reload: true
+    name: "{{ homepage_service }}"
+    state: restarted
+  failed_when: false

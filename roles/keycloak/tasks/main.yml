@@ -1,0 +1,11 @@
+---
+
+- name: Validate container engine
+  ansible.builtin.assert:
+    that:
+      - keycloak_container_engine in ['podman']
+    fail_msg: "Unsupported container engine: {{ keycloak_container_engine }}"
+  changed_when: false
+
+- name: Include container engine tasks
+  ansible.builtin.include_tasks: "engine_{{ keycloak_container_engine }}.yml"

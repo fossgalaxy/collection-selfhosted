@@ -1,0 +1,88 @@
+---
+
+- name: Ensure FreeIPA realm exists
+  community.general.keycloak_realm:
+    validate_certs: "{{ keycloak_validate_certs }}"
+    auth_client_id: "{{ keycloak_client_id }}"
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: "{{ keycloak_ansible_realm }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_pw }}"
+    id: freeipa
+    realm: freeipa
+    state: present
+
+- name: Ensure keyclaok ldap bind account exists
+  community.general.ldap_entry:
+    server_url: "{{ keycloak_ldap_connection }}"
+    bind_dn: "cn=Directory Manager"
+    bind_pw: "{{ keycloak_ipa_dm_pw }}"
+    dn: "{{ keycloak_ipa_bind_dn }}"
+    objectClass:
+      - account
+      - simplesecurityobject
+    attributes:
+      uid: "{{ keycloak_ipa_bind_user }}"
+      description: "Keycloak bind account"
+      userPassword: "{{ keycloak_ipa_bound_pw }}"
+
+- name: Ensure Keycloak syncs to FreeIPA
+  community.general.keycloak_user_federation:
+    validate_certs: "{{ keycloak_validate_certs }}"
+    auth_client_id: "{{ keycloak_clinet_id }}"
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: "{{ keycloak_ansible_realm }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_pw }}"
+    realm: freeipa
+    name: freeipa-ldap
+    state: present
+    provider_id: ldap
+    provider_type: org.keycloak.storage.UserStorageProvider
+    config:
+      priority: 0
+      enabled: true
+      cachePolicy: DEFAULT
+      batchSizeForSync: 1000
+      editMode: READ_ONLY
+      importEnabled: true
+      syncRegistrations: false
+      vendor: other
+      usernameLDAPAttribute: uid
+      rdnLDAPAttribute: uid
+      uuidLDAPAttribute: ipaUniqueID
+      userObjectClasses: inetOrgPerson, organizationalPerson
+      connectionUrl: "{{ keycloak_ldap_connection }}"
+      usersDn: "{{ freeipa_ldap_users }}"
+      authType: simple
+      bindDn: "{{ keycloak_ldap_bind_dn }}"
+      bindCredential: "{{ keycloak_ldap_bind_pw }}"
+      fullSyncPeriod: 43200
+    mappers:
+      - name: "full name"
+        providerId: "full-name-ldap-mapper"
+        providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+        config:
+          ldap.full.name.attribute: displayName
+          read.only: true
+          write.only: false
+      - name: "first name"
+        providerId: "user-attribute-ldap-mapper"
+        providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+        config:
+          ldap.attribute: givenName
+          model.attribute: firstName
+          read.only: true
+          write.only: false
+      - name: group
+        providerId: group-ldap-mapper
+        providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+        config:
+          memberof.ldap.attribute: memberOf
+          membership.attribute.type: DN
+          membership.ldap.attribute: member
+          membership.user.ldap.attribute: uid
+          mode: READ_ONLY
+          user.roles.retrieve.strategy: LOAD_GROUPS_BY_MEMBER_ATTRIBUTE
+          default.ldap.groups.path: /
+          groups.dn: "{{ freeipa_ldap_groups }}"

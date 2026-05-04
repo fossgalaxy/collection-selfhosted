@@ -1,0 +1,38 @@
+---
+
+- name: Validate db vars
+  ansible.builtin.assert:
+    that:
+      - keycloak_db_host is string and keycloak_db_host | length > 0
+      - keycloak_db_name is string and keycloak_db_name | length > 0
+      - keycloak_db_owner is string and keycloak_db_owner | length > 0
+      - keycloak_db_user is string and keycloak_db_user | length > 0
+      - keycloak_db_pw is string and keycloak_db_pw | length > 0
+      - keycloak_secret_db_password is string and keycloak_secret_db_password | length > 0
+    fail_msg: "DB enabled but required DB variables are missing/empty."
+  changed_when: false
+
+- name: Ensure Keycloak DB exists
+  no_log: true
+  ansible.builtin.include_role:
+    name: "fossgalaxy.infra.postgres_db"
+    tasks_from: ensure_db.yml
+  vars:
+    pg_host: "{{ keycloak_db_host }}"
+    pg_db: "{{ keycloak_db_name }}"
+    pg_owner: "{{ keycloak_db_owner }}"
+    pg_app_user: "{{ keycloak_db_user }}"
+    pg_app_password: "{{ keycloak_db_pw }}"
+    pg_app_inherits_owner: true
+    pg_remote: "{{ keycloak_db_remote }}"
+  when: keycloak_db | bool
+
+- name: Ensure secret for database password exists
+  become: true
+  no_log: true
+  containers.podman.podman_secret:
+    state: present
+    name: "{{ keycloak_secret_db_password }}"
+    data: "{{ keycloak_db_pw }}"
+  notify:
+    - Restart keycloak

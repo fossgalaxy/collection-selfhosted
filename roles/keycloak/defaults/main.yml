@@ -1,0 +1,98 @@
+---
+
+# optimized image stuff
+keycloak_version: "26.6"
+keycloak_image_base: "quay.io/keycloak/keycloak:{{ keycloak_version }}"
+keycloak_image_optimised: "localhost/fossgalaxy/{{ keycloak_service }}:{{ keycloak_version }}"
+keycloak_image_build: true # build an optimized image by default
+
+# parameters for running the container
+keycloak_image: "{{ keycloak_image_build | ternary(keycloak_image_optimised, keycloak_image_base) }}"
+keycloak_args: ["--http-enabled=true", "--proxy-headers", "forwarded"]
+
+#keycloak_domain: ""
+keycloak_url: "https://{{ keycloak_domain }}"
+keycloak_admin_domain: ""
+keycloak_admin_url: "https://{{ keycloak_domain }}/admin"
+
+# podman stuff
+keycloak_container_engine: podman
+keycloak_service: keycloak
+keycloak_quadlet_wanted_by: multi-user.target
+
+# podman secret names
+keycloak_secret_db_password: "{{ keycloak_service }}_db_pass"
+keycloak_secret_admin_password: "{{ keycloak_service }}_admin_pass"
+
+# UID and GID of container user
+keycloak_uid: 1000
+keycloak_gid: 1000
+
+# default admin account
+keycloak_admin_user: "kc_admin"
+keycloak_admin_password: ""
+
+# Database configuration
+keycloak_db: true
+keycloak_db_host: "host.containers.internal"
+keycloak_db_name: "{{ keycloak_service }}"
+keycloak_db_owner: "{{ keycloak_service }}_admin"
+keycloak_db_user: "{{ keycloak_service }}_app"
+keycloak_db_pw: ""
+keycloak_db_remote: true
+
+# FreeIPA integration
+keycloak_freeipa: false
+keycloak_freeipa_realm: freeipa
+
+# FreeIPA sync connection
+keycloak_ldap_connection: "ldap://{{ groups['ipaservers'][0] }}"
+keycloak_ldap_bind_user: "{{ keycloak_service }}_bind"
+keycloak_ldap_bind_dn: "uid={{ keycloak_ldap_bind_user }},{{ freeipa_ldap_sys }}"
+keycloak_ldap_bind_pw: ""
+
+# traefik labels
+keycloak_traefik: true
+keycloak_traefik_labels: >-
+  {{
+    (
+      {'traefik.enable': 'true'}
+    ) | combine(
+          (keycloak_traefik | default(true) | bool)
+          | ternary(
+              ([
+                {
+                  'key': 'traefik.http.routers.' ~ keycloak_service ~ '.rule',
+                  'value': 'Host(`' ~ keycloak_domain ~ '`)'
+                },
+                {
+                  'key': 'traefik.http.services.' ~ keycloak_service ~ '.loadbalancer.server.port',
+                  'value': '8080'
+                }
+              ] | ansible.builtin.items2dict),
+              {}
+          )
+      ) | combine(
+          (keycloak_admin_domain | length > 0)
+          | ternary(
+              ([
+                {
+                  'key': 'traefik.http.routers.' ~ keycloak_service ~ '-admin.rule',
+                  'value': 'Host(`' ~ keycloak_admin_domain ~ '`)'
+                },
+                {
+                  'key': 'traefik.http.services.' ~ keycloak_service ~ '-admin.loadbalancer.server.port',
+                  'value': '9000'
+                }
+              ] | ansible.builtin.items2dict),
+              {}
+          )
+      )
+  }}
+
+# Extra environment hook
+keycloak_extra_env: {}
+keycloak_extra_labels: {}
+keycloak_extra_volumes: []
+keycloak_extra_secrets: []
+keycloak_extra_quadlet_options: []

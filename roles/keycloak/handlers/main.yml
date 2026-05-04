@@ -1,0 +1,9 @@
+---
+
+- name: Restart Keycloak
+  become: true
+  ansible.builtin.service:
+    daemon_reload: true
+    name: "{{ keycloak_service }}"
+    state: restarted
+  failed_when: false

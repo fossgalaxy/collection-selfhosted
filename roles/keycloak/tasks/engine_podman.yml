@@ -1,0 +1,52 @@
+---
+
+- name: Ensure podman database is setup
+  ansible.builtin.include_tasks: "podman_postgres.yml"
+  when: keycloak_db | bool
+
+- name: Ensure secret for admin password exists
+  become: true
+  containers.podman.podman_secret:
+    state: present
+    name: "{{ keycloak_secret_admin_password }}"
+    data: "{{ keycloak_admin_password }}"
+
+- name: Build derrived container image
+  become: true
+  containers.podman.podman_image:
+    name: "{{ keycloak_image_optimised }}"
+    state: build
+    build:
+      container_file: |-
+        FROM "{{ keycloak_image_base }}" as builder
+
+        ENV KC_METRICS_ENABLED=true
+        ENV KC_HEALTH_ENABLED=true
+
+        ENV KC_FEATURES=token-exchange
+        ENV KC_DB=postgres
+
+        WORKDIR /opt/keycloak
+        RUN /opt/keycloak/bin/kc.sh build
+
+        FROM "{{ keycloak_image_base }}"
+        COPY --from=builder /opt/keycloak /opt/keycloak
+
+        WORKDIR /opt/keycloak
+        ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--optimized"]
+  when: keycloak_image_build
+
+- name: Ensure container exists
+  become: true
+  containers.podman.podman_container:
+    name: "{{ keycloak_service }}"
+    image: "{{ keycloak_image }}"
+    state: quadlet
+    command: "{{ keycloak_args }}"
+    env: "{{ keycloak_env | combine(keycloak_extra_env) }}"
+    secrets: "{{ keycloak_secrets + keycloak_extra_secrets }}"
+    volumes: "{{ keycloak_volumes + keycloak_extra_volumes }}"
+    label: "{{ keycloak_labels | combine(keycloak_extra_labels) }}"
+    quadlet_options: "{{ keycloak_quadlet_options + keycloak_extra_quadlet_options }}"
+  notify:
+    - Restart Keycloak

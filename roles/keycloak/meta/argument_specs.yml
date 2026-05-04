@@ -1,0 +1,167 @@
+---
+argument_specs:
+  main:
+    short_description: Deploy Keycloak using Podman quadlet
+    description:
+      - Deploys Keycloak as a systemd-managed Podman quadlet container.
+      - Optionally configures PostgreSQL (via fossgalaxy.infra.postgres_db) and OpenID Connect.
+    options:
+      # ---- Core ----
+      keycloak_version:
+        type: str
+        default: "26.6"
+        description: Keycloak image tag/version.
+
+      keycloak_image:
+        type: str
+        default: "quay.io/keycloak/keycloak:{{ keycloak_version }}"
+        description: Container image reference.
+
+      keycloak_service:
+        type: str
+        default: "keycloak"
+        description:
+          - Podman container name and (by convention) the systemd unit name used by the handler.
+
+      keycloak_domain:
+        type: str
+        required: true
+        description: Public DNS name for Keycloak.
+
+      keycloak_url:
+        type: str
+        default: "https://{{ keycloak_domain }}"
+        description: Public URL for Keycloak.
+
+      # ---- Quadlet / systemd ----
+      keycloak_quadlet_wanted_by:
+        type: str
+        default: "multi-user.target"
+        description: systemd target to install/enable the quadlet unit under.
+
+      keycloak_volume_extensions:
+        type: str
+        default: "{{ keycloak_service }}_extensions"
+        description: Name of the Podman volume for FreshRSS extensions.
+
+      # ---- UID/GID ----
+      keycloak_uid:
+        type: int
+        default: 1000
+        description: UID used inside the container.
+
+      keycloak_gid:
+        type: int
+        default: 1000
+        description: GID used inside the container.
+
+      # ---- Admin ----
+      keycloak_admin_user:
+        type: str
+        default: "kc_admin"
+        description: Default admin username.
+
+      keycloak_admin_password:
+        type: str
+        required: true
+        no_log: true
+        description: Default admin password.
+
+      # ---- Secrets (names) ----
+      keycloak_secret_db_password:
+        type: str
+        default: "{{ keycloak_service }}_db_pass"
+        description: Podman secret name for the DB password.
+
+      keycloak_secret_admin_password:
+        type: str
+        default: "{{ keycloak_service }}_admin_pass"
+        description: Podman secret name for the admin password.
+
+      keycloak_secret_oid_secret:
+        type: str
+        default: "{{ keycloak_service }}_oid_secret"
+        description: Podman secret name for the OIDC client secret.
+
+      # ---- Feature flags ----
+      keycloak_db:
+        type: bool
+        default: true
+        description: Enable PostgreSQL support.
+
+      keycloak_oid:
+        type: bool
+        default: true
+        description: Enable OpenID Connect support.
+
+      # ---- DB settings (required when freshrss_db=true) ----
+      keycloak_db_host:
+        type: str
+        description: PostgreSQL primary host (or VIP) used by the application and by the postgres_db role.
+
+      keycloak_db_name:
+        type: str
+        default: "{{ keycloak_service }}"
+        description: Database name.
+
+      keycloak_db_owner:
+        type: str
+        default: "{{ keycloak_service }}_admin"
+        description: Database owner role name.
+
+      keycloak_db_user:
+        type: str
+        default: "{{ keycloak_service }}_app"
+        description: Application login role name.
+
+      keycloak_db_pw:
+        type: str
+        no_log: true
+        description: Application database password.
+
+      # ---- OIDC settings (required when freshrss_oid=true) ----
+      keycloak_oid_meta_url:
+        type: str
+        description: OIDC discovery/metadata URL.
+
+      keyclaok_oid_client:
+        type: str
+        default: "{{ keycloak_service }}"
+        description: OIDC client ID.
+
+      keycloak_oid_secret:
+        type: str
+        no_log: true
+        description: OIDC client secret.
+
+      keycloak_oid_headers:
+        type: str
+        default: "X-Forwarded-Host X-Forwarded-Proto"
+        description: Value for OIDC_X_FORWARDED_HEADERS.
+
+      # ---- Extension hooks ----
+      keycloak_extra_env:
+        type: dict
+        default: {}
+        description: Extra environment variables merged into the container environment.
+
+      keycloak_extra_labels:
+        type: dict
+        default: {}
+        description: Extra labels merged into the container labels.
+
+      keycloak_extra_volumes:
+        type: list
+        default: []
+        description: Extra volumes merged into the container volumes.
+
+      keycloak_extra_secrets:
+        type: list
+        default: []
+        description: Extra secrets merged into the container secrets.
+
+      keycloak_extra_quadlet_options:
+        type: list
+        elements: str
+        default: []
+        description: Extra options merged into the container unit file.

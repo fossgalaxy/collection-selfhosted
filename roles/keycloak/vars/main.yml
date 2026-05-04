@@ -1,0 +1,37 @@
+---
+
+keycloak_env: >-
+  {{
+    {
+      'PUID': keycloak_uid,
+      'PGID': keycloak_gid,
+      'KC_HOSTNAME': keycloak_url
+    }
+    | combine((keycloak_db | bool) | ternary({
+        'KC_DB_URL': "jdbc:postgresql://" ~ keycloak_db_host ~ "/" ~ keycloak_db_name,
+        'KC_DB_USERNAME': keycloak_db_user
+      }, {}))
+  }}
+
+keycloak_secrets: >-
+  {{
+    ((keycloak_db | bool) | ternary(
+      [ keycloak_secret_db_password ~ ',type=env,target=KC_DB_PASSWORD' ], []
+    ))
+    + [
+      keycloak_secret_admin_password ~ ',type=env,target=KC_BOOTSTRAP_ADMIN_PASSWORD'
+    ]
+  }}
+
+keycloak_volumes: []
+
+keycloak_labels: >-
+  {{
+    (keycloak_traefik | bool)
+    | ternary(keycloak_traefik_labels, {})
+  }}
+
+keycloak_quadlet_options:
+  - |
+    [Install]
+    WantedBy={{ keycloak_quadlet_wanted_by }}

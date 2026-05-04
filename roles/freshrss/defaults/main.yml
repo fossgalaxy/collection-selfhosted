@@ -29,7 +29,7 @@ freshrss_admin_api_pass: "{{ freshrss_admin_pass }}"
 
 # Database configuration
 freshrss_db: true
-freshrss_db_host: ""
+freshrss_db_host: "host.containers.internal"
 freshrss_db_name: "{{ freshrss_service }}"
 freshrss_db_owner: "{{ freshrss_service }}_admin"
 freshrss_db_user: "{{ freshrss_service }}_app"

@@ -1,5 +1,14 @@
 ---
 
+- name: Validate freeipa vars
+  ansible.builtin.assert:
+    that:
+      - keycloak_ldap_connection is string and keycloak_ldap_connection | length > 0
+      - keycloak_ldap_suffix is string and keycloak_ldap_suffix | length > 0
+      - keycloak_ldap_bind_password is string and keycloak_ldap_bind_password | length > 0
+    fail_msg: "FreeIPA enabled but required variables are missing/empty."
+  changed_when: false
+
 - name: Ensure keycloak ldap bind account exists
   when: keycloak_ldap
   community.general.ldap_entry:

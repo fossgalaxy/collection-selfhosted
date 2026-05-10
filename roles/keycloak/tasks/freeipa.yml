@@ -1,13 +1,15 @@
 ---
 
-- name: Validate freeipa vars
-  ansible.builtin.assert:
-    that:
-      - keycloak_ldap_connection is string and keycloak_ldap_connection | length > 0
-      - keycloak_ldap_suffix is string and keycloak_ldap_suffix | length > 0
-      - keycloak_ldap_bind_password is string and keycloak_ldap_bind_password | length > 0
-    fail_msg: "FreeIPA enabled but required variables are missing/empty."
-  changed_when: false
+- name: Wait for Keycloak to be up
+  uri:
+    url: "{{ keycloak_url }}/realms/master"
+    method: GET
+    status_code: 200
+    validate_certs: "{{ keycloak_validate_certs }}"
+  register: keycloak_up
+  retries: 10
+  delay: 6
+  until: keycloak_up.status == 200
 
 - name: Ensure FreeIPA realm exists
   when: keycloak_freeipa
@@ -21,6 +23,10 @@
     id: freeipa
     realm: freeipa
     state: present
+  register: freeipa_realm_result
+  retries: 5
+  delay: 3
+  until: freeipa_realm_result is succeeded
 
 - name: Include FreeIPA realm
   ansible.builtin.include_tasks: "freeipa_ldap.yml"

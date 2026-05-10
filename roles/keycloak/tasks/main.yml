@@ -9,3 +9,7 @@
 
 - name: Include container engine tasks
   ansible.builtin.include_tasks: "engine_{{ keycloak_container_engine }}.yml"
+
+- name: Include FreeIPA realm
+  ansible.builtin.include_tasks: "freeipa.yml"
+  when: keycloak_freeipa

@@ -1,0 +1,52 @@
+---
+
+- name: Ensure keycloak ldap bind account exists
+  when: keycloak_ldap
+  community.general.ldap_entry:
+    server_uri: "{{ keycloak_ldap_connection }}"
+    bind_dn: "{{ keycloak_ldap_dm_user }}"
+    bind_pw: "{{ keycloak_ldap_dm_password }}"
+    dn: "{{ keycloak_ldap_bind_dn }}"
+    objectClass:
+      - account
+      - simplesecurityobject
+    attributes:
+      uid: "{{ keycloak_ldap_bind_user }}"
+      description: "Keycloak bind account"
+      userPassword: "{{ keycloak_ldap_bind_password }}"
+
+- name: Ensure Keycloak syncs to FreeIPA
+  when: keycloak_ldap
+  community.general.keycloak_user_federation:
+    validate_certs: "{{ keycloak_validate_certs }}"
+    auth_client_id: "{{ keycloak_client_id }}"
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: "{{ keycloak_auth_realm }}"
+    auth_username: "{{ keycloak_auth_user }}"
+    auth_password: "{{ keycloak_auth_password }}"
+    realm: "{{ keycloak_freeipa_realm }}"
+    name: FreeIPA
+    state: present
+    provider_id: ldap
+    provider_type: org.keycloak.storage.UserStorageProvider
+    config:
+      priority: 0
+      enabled: true
+      cachePolicy: DEFAULT
+      batchSizeForSync: 1000
+      editMode: READ_ONLY
+      importEnabled: true
+      syncRegistrations: true
+      vendor: other
+      usernameLDAPAttribute: uid
+      rdnLDAPAttribute: uid
+      uuidLDAPAttribute: ipaUniqueID
+      userObjectClasses: "inetOrgPerson,organizationalPerson"
+      connectionUrl: "{{ keycloak_ldap_connection }}"
+      usersDn: "{{ keycloak_ldap_userdn }}"
+      authType: simple
+      bindDn: "{{ keycloak_ldap_bind_dn }}"
+      bindCredential: "{{ keycloak_ldap_bind_password }}"
+      fullSyncPeriod: "{{ keycloak_ldap_sync_full }}"
+      changedSyncPeriod: "{{ keycloak_ldap_sync_update }}"
+    mappers: "{{ keycloak_ldap_mappers }}"

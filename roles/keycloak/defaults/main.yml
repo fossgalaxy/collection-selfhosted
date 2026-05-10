@@ -32,6 +32,14 @@ keycloak_gid: 1000
 keycloak_admin_user: "kc_admin"
 keycloak_admin_password: ""
 
+# Rest variables
+keycloak_validate_certs: true
+keycloak_client_id: admin-cli
+
+keycloak_auth_realm: master
+keycloak_auth_user: "{{ keycloak_admin_user }}"
+keycloak_auth_password: "{{ keycloak_admin_password }}"
+
 # Database configuration
 keycloak_db: true
 keycloak_db_host: "host.containers.internal"
@@ -45,11 +53,80 @@ keycloak_db_remote: true
 keycloak_freeipa: false
 keycloak_freeipa_realm: freeipa
 
+# directory manager (used to create sync account)
+keycloak_ldap_dm_user: "cn=Directory Manager"
+keycloak_ldap_dm_password: "{{ ipadm_password | default('') }}"
+
 # FreeIPA sync connection
-keycloak_ldap_connection: "ldap://{{ groups['ipaservers'][0] }}"
+keycloak_ldap: "{{ keycloak_freeipa }}"
+keycloak_ldap_suffix: "{{ freeipa_ldap_suffix | default('') }}"
+
+keycloak_ldap_connection: "{{ freeipa_ldap_connection | default('') }}"
 keycloak_ldap_bind_user: "{{ keycloak_service }}_bind"
-keycloak_ldap_bind_dn: "uid={{ keycloak_ldap_bind_user }},{{ freeipa_ldap_sys }}"
-keycloak_ldap_bind_pw: ""
+keycloak_ldap_bind_dn: "uid={{ keycloak_ldap_bind_user }},cn=sysaccounts,cn=etc,{{ keycloak_ldap_suffix }}"
+keycloak_ldap_bind_password: ""
+
+keycloak_ldap_userdn: "cn=users,cn=accounts,{{ keycloak_ldap_suffix }}"
+keycloak_ldap_groupdn: "cn=groups,cn=accounts,{{ keycloak_ldap_suffix }}"
+
+keycloak_ldap_sync_full: 34200 # 12 hours
+keycloak_ldap_sync_update: 600 # 10 minutes
+
+keycloak_ldap_mappers:
+  - name: "creation date"
+    providerId: "user-attribute-ldap-mapper"
+    config:
+      ldap.attribute: createTimestamp
+      user.model.attribute: createTimestamp
+      read.only: true
+      write.only: false
+  - name: "modify date"
+    providerId: "user-attribute-ldap-mapper"
+    config:
+      ldap.attribute: modifyTimestamp
+      user.model.attribute: modifyTimestamp
+      read.only: true
+      write.only: false
+  - name: "email"
+    providerId: "user-attribute-ldap-mapper"
+    config:
+      ldap.attribute: mail
+      user.model.attribute: email
+      read.only: true
+      write.only: false
+  - name: "first name"
+    providerId: "user-attribute-ldap-mapper"
+    config:
+      ldap.attribute: givenName
+      user.model.attribute: firstName
+      read.only: true
+      write.only: false
+  - name: "last name"
+    providerId: "user-attribute-ldap-mapper"
+    config:
+      ldap.attribute: sn
+      user.model.attribute: lastName
+      read.only: true
+      write.only: false
+  - name: "username"
+    providerId: "user-attribute-ldap-mapper"
+    config:
+      ldap.attribute: uid
+      user.model.attribute: username
+      read.only: true
+      write.only: false
+  - name: "groups"
+    providerId: group-ldap-mapper
+    providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+    config:
+      memberof.ldap.attribute: memberOf
+      membership.attribute.type: DN
+      membership.ldap.attribute: member
+      membership.user.ldap.attribute: uid
+      mode: READ_ONLY
+      user.roles.retrieve.strategy: LOAD_GROUPS_BY_MEMBER_ATTRIBUTE
+      default.ldap.groups.path: /
+      groups.dn: "{{ keycloak_ldap_groupdn }}"
 
 # traefik labels
 keycloak_traefik: true

@@ -11,7 +11,7 @@
     name: "{{ keycloak_secret_admin_password }}"
     data: "{{ keycloak_admin_password }}"
 
-- name: Build derrived container image
+- name: Build derived container image
   become: true
   containers.podman.podman_image:
     name: "{{ keycloak_image_optimised }}"

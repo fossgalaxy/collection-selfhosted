@@ -5,7 +5,8 @@ keycloak_env: >-
     {
       'PUID': keycloak_uid,
       'PGID': keycloak_gid,
-      'KC_HOSTNAME': keycloak_url
+      'KC_HOSTNAME': keycloak_url,
+      'KC_BOOTSTRAP_ADMIN_USERNAME': keycloak_admin_user
     }
     | combine((keycloak_db | bool) | ternary({
         'KC_DB_URL': "jdbc:postgresql://" ~ keycloak_db_host ~ "/" ~ keycloak_db_name,

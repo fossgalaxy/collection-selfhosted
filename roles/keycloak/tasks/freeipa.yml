@@ -1,6 +1,6 @@
 ---
 
-- name: Wait for Keycloak to be up
+- name: freeipa | Wait for Keycloak to be up
   uri:
     url: "{{ keycloak_url }}/realms/master"
     method: GET
@@ -11,7 +11,7 @@
   delay: 6
   until: keycloak_up.status == 200
 
-- name: Ensure FreeIPA realm exists
+- name: freeipa | Ensure FreeIPA realm exists
   when: keycloak_freeipa
   community.general.keycloak_realm:
     validate_certs: "{{ keycloak_validate_certs }}"
@@ -28,6 +28,6 @@
   delay: 3
   until: freeipa_realm_result is succeeded
 
-- name: Include FreeIPA realm
+- name: freeipa | Include FreeIPA realm
   ansible.builtin.include_tasks: "freeipa_ldap.yml"
   when: keycloak_ldap

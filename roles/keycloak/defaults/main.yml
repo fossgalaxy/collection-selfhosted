@@ -10,7 +10,7 @@ keycloak_image_build: true # build an optimized image by default
 keycloak_image: "{{ keycloak_image_build | ternary(keycloak_image_optimised, keycloak_image_base) }}"
 keycloak_args: ["--http-enabled=true", "--proxy-headers", "forwarded"]
 
-#keycloak_domain: ""
+# keycloak_domain: ""
 keycloak_url: "https://{{ keycloak_domain }}"
 keycloak_admin_domain: ""
 keycloak_admin_url: "https://{{ keycloak_domain }}/admin"

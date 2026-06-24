@@ -1,10 +1,10 @@
 ---
 
-- name: Ensure podman database is setup
+- name: "engine_podman | Ensure podman database is setup"
   ansible.builtin.include_tasks: "podman_postgres.yml"
   when: freshrss_db | bool
 
-- name: Ensure data volume exists
+- name: "engine_podman | Ensure data volume exists"
   become: true
   containers.podman.podman_volume:
     name: "{{ freshrss_volume_data }}"
@@ -17,7 +17,7 @@
 #    name: webpigeon.selfhosted.traefik
 #  when: freshrss_traefik | bool
 
-- name: Ensure extensions volume exists
+- name: "engine_podman | Ensure extensions volume exists"
   become: true
   containers.podman.podman_volume:
     name: "{{ freshrss_volume_extensions }}"
@@ -25,7 +25,7 @@
   notify:
     - Restart FreshRSS
 
-- name: Ensure secret for admin password exists
+- name: "engine_podman | Ensure secret for admin password exists"
   become: true
   no_log: true
   containers.podman.podman_secret:
@@ -35,7 +35,7 @@
   notify:
     - Restart FreshRSS
 
-- name: Ensure secret for admin api password exists
+- name: "engine_podman | Ensure secret for admin api password exists"
   become: true
   no_log: true
   containers.podman.podman_secret:
@@ -45,11 +45,11 @@
   notify:
     - Restart FreshRSS
 
-- name: Enable OIDC support
+- name: "engine_podman | Enable OIDC support"
   ansible.builtin.include_tasks: "podman_openid.yml"
   when: freshrss_oid | bool
 
-- name: Ensure container exists
+- name: "engine_podman | Ensure container exists"
   become: true
   containers.podman.podman_container:
     name: "{{ freshrss_service }}"

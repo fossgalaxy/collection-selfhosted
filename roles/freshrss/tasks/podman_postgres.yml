@@ -1,6 +1,6 @@
 ---
 
-- name: Validate db vars
+- name: "podman_postgres | Validate db vars"
   ansible.builtin.assert:
     that:
       - freshrss_db_host is string and freshrss_db_host | length > 0
@@ -12,7 +12,7 @@
     fail_msg: "DB enabled but required DB variables are missing/empty."
   changed_when: false
 
-- name: Ensure FreshRSS DB exists
+- name: "podman_postgres | Ensure FreshRSS DB exists"
   no_log: true
   ansible.builtin.include_role:
     name: "fossgalaxy.infra.postgres_db"
@@ -26,7 +26,7 @@
     pg_app_inherits_owner: true
   when: freshrss_db | bool
 
-- name: Ensure secret for database password exists
+- name: "podman_postgres | Ensure secret for database password exists"
   become: true
   no_log: true
   containers.podman.podman_secret:

@@ -1,17 +1,17 @@
 ---
 
-- name: Ensure podman database is setup
+- name: engine_podman | Ensure podman database is setup
   ansible.builtin.include_tasks: "podman_postgres.yml"
   when: keycloak_db | bool
 
-- name: Ensure secret for admin password exists
+- name: engine_podman | Ensure secret for admin password exists
   become: true
   containers.podman.podman_secret:
     state: present
     name: "{{ keycloak_secret_admin_password }}"
     data: "{{ keycloak_admin_password }}"
 
-- name: Build derived container image
+- name: engine_podman | Build derived container image
   become: true
   containers.podman.podman_image:
     name: "{{ keycloak_image_optimised }}"
@@ -36,7 +36,7 @@
         ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--optimized"]
   when: keycloak_image_build
 
-- name: Ensure container exists
+- name: engine_podman | Ensure container exists
   become: true
   containers.podman.podman_container:
     name: "{{ keycloak_service }}"

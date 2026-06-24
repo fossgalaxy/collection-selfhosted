@@ -1,6 +1,6 @@
 ---
 
-- name: Validate OIDC vars
+- name: podman_openid | Validate OIDC vars
   ansible.builtin.assert:
     that:
       - freshrss_oid_meta_url is string and freshrss_oid_meta_url | length > 0
@@ -9,7 +9,7 @@
     fail_msg: "OIDC enabled but required OIDC variables are missing/empty."
   changed_when: false
 
-- name: Ensure secret for OpenID exists
+- name: podman_openid | Ensure secret for OpenID exists
   become: true
   no_log: true
   containers.podman.podman_secret:

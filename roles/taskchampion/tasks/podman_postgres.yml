@@ -1,0 +1,53 @@
+---
+
+- name: "podman_postgres | Validate db vars"
+  ansible.builtin.assert:
+    that:
+      - taskchampion_db_host is string and taskchampion_db_host | length > 0
+      - taskchampion_db_name is string and taskchampion_db_name | length > 0
+      - taskchampion_db_owner is string and taskchampion_db_owner | length > 0
+      - taskchampion_db_user is string and taskchampion_db_user | length > 0
+      - taskchampion_db_pw is string and taskchampion_db_pw | length > 0
+      - taskchampion_secret_db_uri is string and taskchampion_secret_db_uri | length > 0
+    fail_msg: "DB enabled but required DB variables are missing/empty."
+  changed_when: false
+
+- name: "podman_postgres | Ensure DB exists"
+  no_log: true
+  ansible.builtin.include_role:
+    name: "fossgalaxy.infra.postgres_db"
+    tasks_from: ensure_db.yml
+  vars:
+    pg_host: "{{ taskchampion_db_host }}"
+    pg_db: "{{ taskchampion_db_name }}"
+    pg_owner: "{{ taskchampion_db_owner }}"
+    pg_app_user: "{{ taskchampion_db_user }}"
+    pg_app_password: "{{ taskchampion_db_pw }}"
+    pg_app_inherits_owner: true
+  when: taskchampion_db | bool
+
+- name: "podman_postgres | Apply schema"
+  no_log: true
+  block:
+    - name: Copy the schema to the db host
+      ansible.builtin.template:
+        src: schema.sql
+        dest: "{{ taskchampion_schema_path }}"
+    - name: Apply the schema to the db
+      community.postgresql.postgresql_script:
+        login_db: "{{ taskchampion_db_name }}"
+        path: "{{ taskchampion_schema_path }}"
+  delegate_to: "{{ taskchampion_db_host }}"
+  become: true
+  become_user: postgres
+  when: taskchampion_db_schema | bool
+
+- name: "podman_postgres | Ensure secret for database password exists"
+  become: true
+  no_log: true
+  containers.podman.podman_secret:
+    state: present
+    name: "{{ taskchampion_secret_db_uri }}"
+    data: "{{ taskchampion_db_uri }}"
+  notify:
+    - Restart TaskChampion

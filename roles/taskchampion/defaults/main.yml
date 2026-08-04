@@ -1,0 +1,71 @@
+---
+
+taskchampion_version: "0.7"
+taskchampion_image: "ghcr.io/gothenburgbitfactory/taskchampion-sync-server-postgres:{{ taskchampion_version }}"
+
+taskchampion_domain: ""
+taskchampion_url: "https://{{ taskchampion_domain }}"
+
+taskchampion_container_engine: podman
+taskchampion_service: taskchampion
+taskchampion_quadlet_wanted_by: multi-user.target
+
+# podman secret names
+taskchampion_secret_db_uri: "{{ taskchampion_service }}_db_uri"
+
+# UID and GID of container user
+taskchampion_uid: 1000
+taskchampion_gid: 1000
+
+taskchampion_log: warn
+taskchampion_clients: []
+taskchampion_create_clients: true
+
+# Database configuration
+taskchampion_db: true
+taskchampion_db_schema: true
+taskchampion_db_host: "host.containers.internal"
+taskchampion_db_name: "{{ taskchampion_service }}"
+taskchampion_db_owner: "{{ taskchampion_service }}_admin"
+taskchampion_db_user: "{{ taskchampion_service }}_app"
+taskchampion_db_pw: ""
+taskchampion_db_uri: "postgres://{{ taskchampion_db_user }}:{{ taskchampion_db_pw }}@{{ taskchampion_db_host }}/{{ taskchampion_db_name }}"
+
+taskchampion_schema_path: "/var/lib/pgsql/.ansible_{{ taskchampion_service }}.sql"
+
+# FreeIPA cert integration
+taskchampion_inject_cert: false
+taskchampion_host_cert_location: /etc/ipa/ca.crt
+taskchampion_tls_cert_dir: /usr/local/share/ca-certificates
+taskchampion_app_cert_location: "{{ forgejo_tls_cert_dir }}/freeipa.crt"
+
+# traefik labels
+taskchampion_traefik: true
+taskchampion_traefik_labels: >-
+  {{
+    (
+      {'traefik.enable': 'true'}
+    ) | combine(
+          (taskchampion_traefik | default(true) | bool)
+          | ternary(
+              ([
+                {
+                  'key': 'traefik.http.routers.' ~ taskchampion_service ~ '.rule',
+                  'value': 'Host(`' ~ taskchampion_domain ~ '`)'
+                },
+                {
+                  'key': 'traefik.http.services.' ~ taskchampion_service ~ '.loadbalancer.server.port',
+                  'value': '8080'
+                }
+              ] | ansible.builtin.items2dict),
+              {}
+          )
+      )
+  }}
+
+# Extra environment hook
+taskchampion_extra_env: {}
+taskchampion_extra_labels: {}
+taskchampion_extra_volumes: []
+taskchampion_extra_secrets: []
+taskchampion_extra_quadlet_options: []

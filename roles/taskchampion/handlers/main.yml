@@ -1,0 +1,9 @@
+---
+
+- name: Restart TaskChampion
+  become: true
+  ansible.builtin.service:
+    daemon_reload: true
+    name: "{{ taskchampion_service }}"
+    state: restarted
+  failed_when: false

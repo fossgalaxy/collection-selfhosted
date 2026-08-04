@@ -1,0 +1,19 @@
+---
+
+- name: "engine_podman | Ensure podman database is setup"
+  ansible.builtin.include_tasks: "podman_postgres.yml"
+  when: taskchampion_db | bool
+
+- name: "engine_podman | Ensure container exists"
+  become: true
+  containers.podman.podman_container:
+    name: "{{ taskchampion_service }}"
+    image: "{{ taskchampion_image }}"
+    state: quadlet
+    env: "{{ taskchampion_env | combine(taskchampion_extra_env) }}"
+    secrets: "{{ taskchampion_secrets + taskchampion_extra_secrets }}"
+    volumes: "{{ taskchampion_volumes + taskchampion_extra_volumes }}"
+    label: "{{ taskchampion_labels | combine(taskchampion_extra_labels) }}"
+    quadlet_options: "{{ taskchampion_quadlet_options + taskchampion_extra_quadlet_options }}"
+  notify:
+    - Restart TaskChampion

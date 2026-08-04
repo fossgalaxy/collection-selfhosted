@@ -1,0 +1,40 @@
+---
+
+taskchampion_env: >-
+  {{
+    {
+      'PUID': taskchampion_uid,
+      'PGID': taskchampion_gid,
+      'RUST_LOG': taskchampion_log,
+      'CREATE_CLIENTS': taskchampion_create_clients|lower,
+      'CLIENT_ID': taskchampion_clients|join(',')
+    }
+    | combine((taskchampion_inject_cert | bool) | ternary({
+      'SSL_CERT_FILE': taskchampion_app_cert_location
+      }, {}))
+  }}
+
+taskchampion_secrets: >-
+  {{
+    ((taskchampion_db | bool) | ternary(
+      [ taskchampion_secret_db_uri ~ ',type=env,target=CONNECTION' ], []
+    ))
+  }}
+
+taskchampion_volumes: >-
+  {{
+    ((taskchampion_inject_cert | bool) | ternary(
+      [ taskchampion_host_cert_location ~ ':' ~ taskchampion_app_cert_location ~ ":ro" ], []
+    ))
+  }}
+
+taskchampion_labels: >-
+  {{
+    (taskchampion_traefik | bool)
+    | ternary(taskchampion_traefik_labels, {})
+  }}
+
+taskchampion_quadlet_options:
+  - |
+    [Install]
+    WantedBy={{ taskchampion_quadlet_wanted_by }}

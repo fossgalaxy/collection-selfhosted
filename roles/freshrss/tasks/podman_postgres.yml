@@ -24,7 +24,7 @@
     pg_app_user: "{{ freshrss_db_user }}"
     pg_app_password: "{{ freshrss_db_pw }}"
     pg_app_inherits_owner: true
-  when: freshrss_db | bool
+  when: freshrss_db_managed | bool
 
 - name: "podman_postgres | Ensure secret for database password exists"
   become: true

@@ -6,7 +6,7 @@
     fail_msg: "Required variables are missing/empty."
   changed_when: false
 
-- name: engine_podman | Ensure podman database is setup
+- name: engine_podman | Ensure database is configured
   ansible.builtin.include_tasks: "podman_postgres.yml"
   when: keycloak_db | bool
 

@@ -1,6 +1,6 @@
 ---
 
-- name: freeipa_ldap | Validate freeipa vars
+- name: freeipa_ldap | Validate vars
   ansible.builtin.assert:
     that:
       - keycloak_ldap_connection is string and keycloak_ldap_connection | length > 0
@@ -10,7 +10,7 @@
   changed_when: false
 
 - name: freeipa_ldap | Ensure keycloak ldap bind account exists
-  when: keycloak_ldap
+  when: keycloak_ldap_managed
   community.general.ldap_entry:
     server_uri: "{{ keycloak_ldap_connection }}"
     bind_dn: "{{ keycloak_ldap_dm_user }}"

@@ -23,14 +23,19 @@ taskchampion_create_clients: true
 
 # Database configuration
 taskchampion_db: true
-taskchampion_db_schema: true
+
 taskchampion_db_host: "host.containers.internal"
 taskchampion_db_name: "{{ taskchampion_service }}"
-taskchampion_db_owner: "{{ taskchampion_service }}_admin"
 taskchampion_db_user: "{{ taskchampion_service }}_app"
-taskchampion_db_pw: ""
+#taskchampion_db_pw: ""
+
+# taskchampion expects a URI rather than multiple env values
 taskchampion_db_uri: "postgres://{{ taskchampion_db_user }}:{{ taskchampion_db_pw }}@{{ taskchampion_db_host }}/{{ taskchampion_db_name }}"
 
+taskchampion_db_managed: "{{ taskchampion_db }}"
+taskchampion_db_owner: "{{ taskchampion_service }}_admin"
+
+taskchampion_db_schema: true
 taskchampion_schema_path: "/var/lib/pgsql/.ansible_{{ taskchampion_service }}.sql"
 
 # FreeIPA cert integration

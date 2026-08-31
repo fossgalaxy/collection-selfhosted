@@ -24,7 +24,7 @@
     pg_app_user: "{{ taskchampion_db_user }}"
     pg_app_password: "{{ taskchampion_db_pw }}"
     pg_app_inherits_owner: true
-  when: taskchampion_db | bool
+  when: taskchampion_db_managed | bool
 
 - name: "podman_postgres | Apply schema"
   no_log: true

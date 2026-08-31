@@ -8,6 +8,7 @@ You can embed the required vars when the role is invoked, or integrate them into
 ```
     - role: fossgalaxy.selfhosted.freshrss
       vars:
+        freshrss_domain: "feeds.example.com"
         freshrss_db_host: "psql.example.com"
         freshrss_db_pw: "DB_PASSWORD_HERE (Or vault variable)"
         freshrss_admin_pass: "ADMIN_PASSWORD_HERE (or vault variable)"

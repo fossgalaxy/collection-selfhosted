@@ -1,4 +1,10 @@
 ---
+- name: engine_podman | assert that required variables are set
+  ansible.builtin.assert:
+    that:
+      - keycloak_admin_password is string and keycloak_admin_password | length > 0
+    fail_msg: "Required variables are missing/empty."
+  changed_when: false
 
 - name: engine_podman | Ensure podman database is setup
   ansible.builtin.include_tasks: "podman_postgres.yml"

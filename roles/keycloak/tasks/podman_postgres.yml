@@ -35,4 +35,4 @@
     name: "{{ keycloak_secret_db_password }}"
     data: "{{ keycloak_db_pw }}"
   notify:
-    - Restart keycloak
+    - Restart Keycloak

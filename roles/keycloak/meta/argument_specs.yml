@@ -12,7 +12,7 @@ argument_specs:
         default: "26.6"
         description: Keycloak image tag/version.
 
-      keycloak_image:
+      keycloak_image_base:
         type: str
         default: "quay.io/keycloak/keycloak:{{ keycloak_version }}"
         description: Container image reference.
@@ -78,21 +78,11 @@ argument_specs:
         default: "{{ keycloak_service }}_admin_pass"
         description: Podman secret name for the admin password.
 
-      keycloak_secret_oid_secret:
-        type: str
-        default: "{{ keycloak_service }}_oid_secret"
-        description: Podman secret name for the OIDC client secret.
-
       # ---- Feature flags ----
       keycloak_db:
         type: bool
         default: true
         description: Enable PostgreSQL support.
-
-      keycloak_oid:
-        type: bool
-        default: true
-        description: Enable OpenID Connect support.
 
       # ---- DB settings (required when freshrss_db=true) ----
       keycloak_db_host:
@@ -118,26 +108,6 @@ argument_specs:
         type: str
         no_log: true
         description: Application database password.
-
-      # ---- OIDC settings (required when freshrss_oid=true) ----
-      keycloak_oid_meta_url:
-        type: str
-        description: OIDC discovery/metadata URL.
-
-      keyclaok_oid_client:
-        type: str
-        default: "{{ keycloak_service }}"
-        description: OIDC client ID.
-
-      keycloak_oid_secret:
-        type: str
-        no_log: true
-        description: OIDC client secret.
-
-      keycloak_oid_headers:
-        type: str
-        default: "X-Forwarded-Host X-Forwarded-Proto"
-        description: Value for OIDC_X_FORWARDED_HEADERS.
 
       # ---- Extension hooks ----
       keycloak_extra_env:

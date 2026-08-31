@@ -38,7 +38,7 @@ freshrss_db_managed: "{{ freshrss_db }}"
 freshrss_db_owner: "{{ freshrss_service }}_admin"
 
 # OpenID
-freshrss_oid: true
+freshrss_oid: "{{ freshrss_oid_meta_url | length > 0 }}"
 freshrss_oid_meta_url: ""
 freshrss_oid_client: "{{ freshrss_service }}"
 freshrss_oid_secret: ""

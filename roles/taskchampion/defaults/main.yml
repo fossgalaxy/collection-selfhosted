@@ -27,7 +27,7 @@ taskchampion_db: true
 taskchampion_db_host: "host.containers.internal"
 taskchampion_db_name: "{{ taskchampion_service }}"
 taskchampion_db_user: "{{ taskchampion_service }}_app"
-#taskchampion_db_pw: ""
+# taskchampion_db_pw: ""
 
 # taskchampion expects a URI rather than multiple env values
 taskchampion_db_uri: "postgres://{{ taskchampion_db_user }}:{{ taskchampion_db_pw }}@{{ taskchampion_db_host }}/{{ taskchampion_db_name }}"

@@ -1,5 +1,5 @@
 ---
-- name: engine_podman | assert that required variables are set
+- name: engine_podman | Assert that required variables are set
   ansible.builtin.assert:
     that:
       - keycloak_admin_password is string and keycloak_admin_password | length > 0

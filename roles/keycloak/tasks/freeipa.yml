@@ -23,10 +23,10 @@
     id: freeipa
     realm: freeipa
     state: present
-  register: freeipa_realm_result
+  register: keycloak_freeipa_realm_result
   retries: 5
   delay: 3
-  until: freeipa_realm_result is succeeded
+  until: keycloak_freeipa_realm_result is succeeded
 
 - name: freeipa | Include FreeIPA realm
   ansible.builtin.include_tasks: "freeipa_ldap.yml"

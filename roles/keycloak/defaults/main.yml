@@ -30,7 +30,7 @@ keycloak_gid: 1000
 
 # default admin account
 keycloak_admin_user: "kc_admin"
-#keycloak_admin_password: ""
+# keycloak_admin_password: ""
 
 # Rest variables
 keycloak_validate_certs: true
@@ -45,7 +45,7 @@ keycloak_db: true
 keycloak_db_host: "host.containers.internal"
 keycloak_db_name: "{{ keycloak_service }}"
 keycloak_db_user: "{{ keycloak_service }}_app"
-#keycloak_db_pw: ""
+# keycloak_db_pw: ""
 
 # these settings only matter if we've managing the db
 keycloak_db_managed: "{{ keycloak_db }}"

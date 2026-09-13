@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 namespace: fossgalaxy
 name: selfhosted
-version: 0.1.0
+version: 0.1.2
 readme: README.md
 authors:
   - Joseph Walton-Rivers <webpigeon@fossgalaxy.com>

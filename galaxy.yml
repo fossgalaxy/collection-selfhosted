@@ -15,7 +15,7 @@ tags:
   - linux
 
 dependencies:
-  "fossgalaxy.infra": "0.1"
+  "fossgalaxy.infra": ">=0.1"
 
 # Metadata
 repository: https://github.com/fossgalaxy/collection-selfhosted/
